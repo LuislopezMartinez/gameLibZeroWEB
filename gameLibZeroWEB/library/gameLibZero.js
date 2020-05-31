@@ -347,6 +347,8 @@ function glz_main_core(){
         }
     }
 
+    // SCAN GAMEPADS..
+    scangamepads();
 
     for(var i=0; i<gameObjects.length; i++){
                 
@@ -1433,7 +1435,37 @@ function newGraph(w, h, color){
     return tex;
 }
 //----------------------------------------------------------------------------------
+//==================================================================================
 //----------------------------------------------------------------------------------
+var haveEventsgamepads = 'GamepadEvent' in window;
+var haveWebkitEventsgamepads = 'WebKitGamepadEvent' in window;
+var controllers = {};
+function connecthandler(e) {
+    addgamepad(e.gamepad);
+}
+function disconnecthandler(e) {
+    removegamepad(e.gamepad);
+}
+function addgamepad(gamepad) {
+    controllers[gamepad.index] = gamepad; 
+}
+function scangamepads() {
+    var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+    for (var i = 0; i < gamepads.length; i++) {
+      if (gamepads[i] && (gamepads[i].index in controllers)) {
+        controllers[gamepads[i].index] = gamepads[i];
+      }
+    }
+  }
+if (haveEventsgamepads) {
+    window.addEventListener("gamepadconnected", connecthandler);
+    window.addEventListener("gamepaddisconnected", disconnecthandler);
+  } else if (haveWebkitEventsgamepads) {
+    window.addEventListener("webkitgamepadconnected", connecthandler);
+    window.addEventListener("webkitgamepaddisconnected", disconnecthandler);
+  } else {
+    setInterval(scangamepads, 500);
+  }
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
