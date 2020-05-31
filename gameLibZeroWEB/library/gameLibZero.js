@@ -150,6 +150,7 @@ var fps_time_now = 0;   // marca el tiempo actual..
 window.onload = function(){
     window.addEventListener("resize", resizeGame);
     this.setup();
+    window.onbeforeunload = null;
     resizeGame();
     Waud.init();
     Waud.autoMute();
