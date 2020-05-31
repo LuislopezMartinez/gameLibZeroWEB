@@ -1300,7 +1300,7 @@ class text extends gameObject{
 
         this.style = undefined;
         this.idText = new PIXI.Text(text);
-        //this.idText.style.font = this.font;
+        this.idText.style.font = this.font;
         this.idText.style.fontSize = this.textSize;
         if(_glz_render_filter_ === false ){
             this.idText.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
@@ -1342,6 +1342,22 @@ class text extends gameObject{
     setStyle(style){
         this.style = style;
         this.idText.style = this.style;
+    }
+    getWidth(){
+        // el primer frame de vida de este texto no tiene el tamaño actualizado..
+        // hasta que no pasa un frame no se calcula..
+        if(this.livedFrames>0){
+            return this.idText.texture.trim.width;
+        }else{
+            return undefined;
+        }
+    }
+    getHeight(){
+        if(this.livedFrames>0){
+            return this.idText.texture.trim.height;
+        }else{
+            return undefined;
+        }
     }
 }
 //----------------------------------------------------------------------------------
@@ -1469,6 +1485,110 @@ if (haveEventsgamepads) {
   }
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+//==================================================================================
+//----------------------------------------------------------------------------------
+var glz_egui_lock = false;
+class gbutton extends gameObject{
+    constructor(gr, x, y, size){
+        super();
+        this.st = 0;
+        this.gr = gr;
+        this.x = x;
+        this.y = y;
+        this.size = size;
+        this.eventName = "";
+        this.colors = [0x02344c, 0x016c9e]; // darkblue.. lightblue..
+    }
+    frame(){
+        switch(this.st){
+            case 0:
+                this.setGraph(this.gr);
+                this.createBody(TYPE_BOX, TYPE_SENSOR);
+                this.setStatic(true);
+                this.st = 10;
+            break;
+            case 10:
+                if(this.touched() && !glz_egui_lock){
+                    this.tint(0x00ffff);
+                    glz_egui_lock = true;
+                    this.st = 20;
+                }else{
+                    this.tint(0xffffff);
+                }
+            break;
+            case 20:
+                if(!this.touched() && !mouse.left){
+                    method(this.eventName, this);
+                    glz_egui_lock = false;
+                    this.st = 10;
+                }
+            break;
+        }
+    }
+    setEvent(eventName){
+        this.eventName = eventName;
+    }
+}
+//---------------------------------------------------------------------------------
+class tbutton extends gameObject{
+    constructor(text, x, y, textSize){
+        super();
+        this.st = 0;
+        this.text = text;
+        this.x = x;
+        this.y = y;
+        this.testSize = 0;
+        this.textSize = textSize;
+        this.eventName = "";
+        this.colors = [0x02344c, 0x016c9e]; // darkblue.. lightblue..
+        this.g1;
+        this.g2;
+        this.idText;
+    }
+    initialize(){
+        this.idText = new text("Arial", this.textSize, this.text, CENTER, this.x, this.y, 0xffffff, 1);
+        
+    }
+    frame(){
+        switch(this.st){
+            case 0:
+                var w = this.idText.getWidth();
+                var h = this.idText.getHeight();
+                if(w!==undefined && h!==undefined){
+                    // aqui ya se lo que mide de ancho el sprite..
+                    this.g1 = newGraph(w+w/10, h+h/10, this.colors[0]);
+                    this.g2 = newGraph(w+w/10, h+h/10, this.colors[1]);
+                    this.setGraph(this.g1);
+                    this.createBody(TYPE_BOX, TYPE_SENSOR);
+                    this.setStatic(true);
+                    this.st = 10;
+                }
+            break;
+            case 10: 
+                if(this.touched() && !glz_egui_lock){
+                    this.setGraph(this.g2);
+                    glz_egui_lock = true;
+                    this.st = 20;
+                }else{
+                    this.tint(0xffffff);
+                }
+            break;
+            case 20:
+                if(!this.touched() && !mouse.left){
+                    method(this.eventName, this);
+                    this.setGraph(this.g1);
+                    glz_egui_lock = false;
+                    this.st = 10;
+                }
+            break;
+        }
+    }
+    setEvent(eventName){
+        this.eventName = eventName;
+    }
+}
+//---------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 //==================================================================================
 //----------------------------------------------------------------------------------
