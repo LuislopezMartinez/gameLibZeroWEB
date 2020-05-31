@@ -204,6 +204,10 @@ function degrees (radians) {
 //----------------------------------------------------------------------------------
 // ported from processing/java..
 function method (codeToExecute, gameObjectCaller){
+    if(codeToExecute===""){
+        console.log("WARNING: event undefined.");
+        return;
+    }
     window[codeToExecute](gameObjectCaller);
 }
 //----------------------------------------------------------------------------------
@@ -504,6 +508,7 @@ class gameObject{
     }
     //=======================================================
     touched(){
+        if(this.graph===undefined){return;}
         var width  = this.graph.texture.baseTexture.width;
         var height = this.graph.texture.baseTexture.height;
         var xmin = this.x-(width/2)*this.size;
@@ -1300,7 +1305,7 @@ class text extends gameObject{
 
         this.style = undefined;
         this.idText = new PIXI.Text(text);
-        this.idText.style.font = this.font;
+        this.idText.style.fontFamily = this.font;
         this.idText.style.fontSize = this.textSize;
         if(_glz_render_filter_ === false ){
             this.idText.texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
@@ -1589,6 +1594,85 @@ class tbutton extends gameObject{
     }
 }
 //---------------------------------------------------------------------------------
+class inputBox extends gameObject{
+    constructor(default_text, x, y, w, h, pwdMode){
+        super();
+        this.st = 0;
+        this.x = x;
+        this.y = y;
+        this.w = w;
+        this.h = h;
+        this.pwdMode = pwdMode;
+        this.eventName = "";
+        this.textSize = 14;
+        this.textColor = 0x777777;
+        this.textColor1 = 0x777777;
+        this.textColor2 = 0x000000;
+        this.os = window.navigator.platform;
+        this.g1 = newGraph(w, h, 0xffffff);
+        this.g2 = newGraph(w+2, h+2, 0x000000);
+        this.idText;
+        this.parameter = default_text;
+    }
+    initialize(){
+        this.idText = new text("Arial", 22, this.parameter, RIGHT, this.x, this.y, this.textColor, 1);
+    }
+    frame(){
+        switch(this.st){
+            case 0:
+                if(this.idText.getWidth()!==undefined){
+                    this.setGraph(this.g1);
+                    this.x += this.w/2;
+                    this.createBody(TYPE_BOX, TYPE_SENSOR);
+                    this.st = 10;
+                }
+            break;
+            case 10:
+                if(this.touched()){
+                    if(!glz_egui_lock){
+                        glz_egui_lock = true;
+                        this.idText.color = this.textColor2;
+                        keyboard_buffer = this.parameter;
+                        this.st = 20;
+                    }
+                }
+
+                if(this.pwdMode){
+                    var pwdText = "";
+                    for(var i=0; i<this.parameter.length; i++){
+                        pwdText += "*";
+                    }
+                    this.idText.text = pwdText;
+                }else{
+                    this.idText.text = this.parameter;
+                }
+
+            break;
+            case 20:
+                if(this.pwdMode){
+                    var pwdText = "";
+                    for(var i=0; i<this.parameter.length; i++){
+                        pwdText += "*";
+                    }
+                    this.idText.text = pwdText + (frameCount % 30 > 15 ? "_" : "");
+                }else{
+                    this.idText.text = this.parameter + (frameCount % 30 > 15 ? "_" : "");
+                }
+                this.parameter = keyboard_buffer;
+                if(key(_ENTER) || (mouse.left&&!this.touched())){
+                    glz_egui_lock = false;
+                    method(this.eventName, this);
+                    this.idText.color = this.textColor1;
+                    this.st = 10;
+                }
+            break;
+        }
+    }
+
+    setEvent(eventName){
+        this.eventName = eventName;
+    }
+}
 //----------------------------------------------------------------------------------
 //==================================================================================
 //----------------------------------------------------------------------------------
