@@ -63,10 +63,10 @@ world.gravity.x = 0;
 //engine.positionIterations = 10;   // default 6.
 //engine.velocityIterations = 1;    // default 4.
 
+const GLZ_VERSION = 1.01;
+const GLZ_TYPE = "GAME FRAMEWORK";
 
 function consoleInfoShow(){
-    const GLZ_VERSION = 1.01;
-    const GLZ_TYPE = "GAME FRAMEWORK";
     const args = [
         `\n %c %c %c gameLibZero ${GLZ_VERSION} - ${GLZ_TYPE}  %c  %c  https://github.com/LuislopezMartinez  %c %c \n\n`,
         'color: #000000; background: #030307; padding:5px 0;',
