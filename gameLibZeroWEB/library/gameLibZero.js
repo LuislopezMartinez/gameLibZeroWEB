@@ -1935,3 +1935,34 @@ class _keyboard_key_ extends gameObject{
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+// GET TEXTURE PIXEL X/Y IN Uint8Array[ r, g, b, a ] format..
+function graphGetPixel(graph, x, y){
+    var w = graph.baseTexture.resource.width;
+    var offset = (w*y)+x;
+    var pixel = new Uint8Array([
+        graph.baseTexture.resource.data[offset],
+        graph.baseTexture.resource.data[offset+1],
+        graph.baseTexture.resource.data[offset+2],
+        graph.baseTexture.resource.data[offset+3]
+    ]);
+    return pixel;
+}
+//---------------------------------------------------------------------------------
+// SET TEXTURE PIXEL X/Y IN 0xrrggbb format..
+function graphSetPixel(graph, x, y, color){
+    var hex = Math.floor( color );
+    var r = ( hex >> 16 & 255 );
+    var g = ( hex >> 8 & 255 );
+    var b = ( hex & 255 );
+    var pixel = new Uint8Array([r, g, b, 255]);
+    var w = graph.baseTexture.resource.width;
+    var offset = (w*y)+x;
+    graph.baseTexture.resource.data[offset] = pixel[0];
+    graph.baseTexture.resource.data[offset+1] = pixel[1];
+    graph.baseTexture.resource.data[offset+2] = pixel[2];
+    graph.baseTexture.resource.data[offset+3] = pixel[3];
+}
+//---------------------------------------------------------------------------------
+//=================================================================================
+//---------------------------------------------------------------------------------
