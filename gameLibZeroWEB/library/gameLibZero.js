@@ -473,6 +473,7 @@ class gameObject{
         this.collisionTypeIds = []; // array de id de los sprites detectados por collisionType()
         this.id;
         this.father = _id_;
+        this.visible = true;
     }
     initialize(){
 
@@ -497,6 +498,7 @@ class gameObject{
             this.sprite.anchor.y = this.cy;
             this.sprite.alpha = this.alpha;
             this.sprite.rotation = -radians(this.angle);
+            this.sprite.visible = this.visible;
 
             if(this.sizex===1 && this.sizey===1){
                 this.sprite.scale.x = this.size;
