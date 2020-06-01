@@ -68,7 +68,7 @@ const GLZ_TYPE = "GAME FRAMEWORK";
 
 function consoleInfoShow(){
     const args = [
-        `\n %c %c %c gameLibZero ${GLZ_VERSION} - ${GLZ_TYPE}  %c  %c  https://github.com/LuislopezMartinez  %c %c \n\n`,
+        `\n %c %c %c gameLibZeroWEB ${GLZ_VERSION} - ${GLZ_TYPE}  %c  %c  https://github.com/LuislopezMartinez  %c %c \n\n`,
         'color: #000000; background: #030307; padding:5px 0;',
         'background: #000000; padding:5px 0;',
         'color: #ffffff; background: #0000ff; padding:5px 0;',
