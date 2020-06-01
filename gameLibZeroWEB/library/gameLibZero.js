@@ -63,7 +63,7 @@ world.gravity.x = 0;
 //engine.positionIterations = 10;   // default 6.
 //engine.velocityIterations = 1;    // default 4.
 
-const GLZ_VERSION = 1.01;
+const GLZ_VERSION = 1.101;
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 function consoleInfoShow(){
@@ -1641,9 +1641,16 @@ class inputBox extends gameObject{
         this.g2 = newGraph(w+2, h+2, 0x000000);
         this.idText;
         this.parameter = default_text;
+        this.mobilePlatform = false;
+        this.onScreenKeyboard;
     }
     initialize(){
         this.idText = new text("Arial", 22, this.parameter, RIGHT, this.x, this.y, this.textColor, 1);
+        if(window.navigator.maxTouchPoints>1){
+            this.mobilePlatform = true;
+        }else{
+            this.mobilePlatform = false;
+        }
     }
     frame(){
         switch(this.st){
@@ -1661,7 +1668,7 @@ class inputBox extends gameObject{
                         glz_egui_lock = true;
                         this.idText.color = this.textColor2;
                         keyboard_buffer = this.parameter;
-                        this.st = 20;
+                        this.st = 12;
                     }
                 }
 
@@ -1676,6 +1683,15 @@ class inputBox extends gameObject{
                 }
 
             break;
+            case 12:
+                if(!this.touched() && !mouse.left){
+                    if(this.mobilePlatform){
+                        this.onScreenKeyboard = new Teclado();
+                        this.onScreenKeyboard.z = this.z+2;
+                    }
+                    this.st = 20;
+                }
+            break;
             case 20:
                 if(this.pwdMode){
                     var pwdText = "";
@@ -1687,12 +1703,32 @@ class inputBox extends gameObject{
                     this.idText.text = this.parameter + (frameCount % 30 > 15 ? "_" : "");
                 }
                 this.parameter = keyboard_buffer;
-                if(key(_ENTER) || (mouse.left&&!this.touched())){
-                    glz_egui_lock = false;
-                    method(this.eventName, this);
-                    this.idText.color = this.textColor1;
-                    this.st = 10;
+                
+                
+                if(this.mobilePlatform){
+                    // control de cierre por teclado tactil..
+                    if(mouse.left && mouse.y<this.onScreenKeyboard.y){
+                        this.parameter = this.onScreenKeyboard.beforeInputText;
+                        signal(this.onScreenKeyboard, s_kill);
+                    }
+                    if(!exists(this.onScreenKeyboard)){
+                        glz_egui_lock = false;
+                        method(this.eventName, this);
+                        this.idText.color = this.textColor1;
+                        this.st = 10;
+                    }
+                }else{
+                    if(key(_ENTER) || (mouse.left&&!this.touched())){
+                        glz_egui_lock = false;
+                        method(this.eventName, this);
+                        this.idText.color = this.textColor1;
+                        this.st = 10;
+                    }
                 }
+                
+                
+                
+                
             break;
         }
     }
@@ -1704,3 +1740,198 @@ class inputBox extends gameObject{
 //----------------------------------------------------------------------------------
 //==================================================================================
 //----------------------------------------------------------------------------------
+class Teclado extends gameObject{
+    constructor(){
+        super();
+        this.st = 0;
+        this.img = [];
+        this.loader;
+        this.shift = false;    // mayusculas activadas o no..
+        this.numeric = false;  // teclado numerico en fila cero o no..
+        this.t;
+        this.beforeInputText = keyboard_buffer;
+    }
+    frame(){
+        switch(this.st){
+            case 0:
+                this.loader = new loadImages("library/keyboard/", 3);
+                this.st = 10;
+            break;
+            case 10:
+                if(this.loader.ready){
+                    this.img = this.loader.get();
+                    this.size = width / this.img[0].width;
+                    this.x = 0;
+                    this.y = height - this.img[0].height*this.size;
+                    this.cx = 0;
+                    this.cy = 0;
+                    this.setGraph(this.img[0]);
+                    this.t = new text("Arial", 32*this.size, "---", RIGHT, 20*this.size, this.y+31*this.size, 0xffffff, 1);
+                    this.t.z = this.z+1;
+                    this.st = 20;
+                }
+            break;
+            case 20:
+                new _keyboard_key_('q', 'Q', this.img[1],  41, 89, '1');
+                new _keyboard_key_('w', 'W', this.img[1], 110, 89, '2');
+                new _keyboard_key_('e', 'E', this.img[1], 178, 89, '3');
+                new _keyboard_key_('r', 'R', this.img[1], 247, 89, '4');
+                new _keyboard_key_('t', 'T', this.img[1], 315, 89, '5');
+                new _keyboard_key_('y', 'Y', this.img[1], 384, 89, '6');
+                new _keyboard_key_('u', 'U', this.img[1], 452, 89, '7');
+                new _keyboard_key_('i', 'I', this.img[1], 521, 89, '8');
+                new _keyboard_key_('o', 'O', this.img[1], 590, 89, '9');
+                new _keyboard_key_('p', 'P', this.img[1], 659, 89, '0');
+                new _keyboard_key_('<<', '<<', this.img[1], 729, 89, '');
+                    
+                new _keyboard_key_('a', 'A', this.img[1],  41+33, 156, '');
+                new _keyboard_key_('s', 'S', this.img[1], 110+33, 156, '');
+                new _keyboard_key_('d', 'D', this.img[1], 178+33, 156, '');
+                new _keyboard_key_('f', 'F', this.img[1], 247+33, 156, '');
+                new _keyboard_key_('g', 'G', this.img[1], 315+33, 156, '');
+                new _keyboard_key_('h', 'H', this.img[1], 384+33, 156, '');
+                new _keyboard_key_('j', 'J', this.img[1], 452+33, 156, '');
+                new _keyboard_key_('k', 'K', this.img[1], 521+33, 156, '');
+                new _keyboard_key_('l', 'L', this.img[1], 590+33, 156, '');
+                new _keyboard_key_('►', '►', this.img[2], 659+51, 156, '');
+                    
+                new _keyboard_key_('ctrl', 'ctrl', this.img[1],  41, 224, '');
+                new _keyboard_key_('z', 'Z', this.img[1], 110, 224, '');
+                new _keyboard_key_('x', 'X', this.img[1], 178, 224, '');
+                new _keyboard_key_('c', 'C', this.img[1], 247, 224, '');
+                new _keyboard_key_('v', 'V', this.img[1], 315, 224, '');
+                new _keyboard_key_('b', 'B', this.img[1], 384, 224, '');
+                new _keyboard_key_('n', 'N', this.img[1], 452, 224, '');
+                new _keyboard_key_('m', 'M', this.img[1], 521, 224, '');
+                new _keyboard_key_('!', '!', this.img[1], 590, 224, '');
+                new _keyboard_key_('?', '?', this.img[1], 659, 224, '');
+                new _keyboard_key_('ctrl', 'ctrl', this.img[1], 729, 224, '');
+                    
+                new _keyboard_key_('?123', '?123', this.img[1],  41, 292, '');
+                new _keyboard_key_('/', '/', this.img[1], 110, 292, '');
+                new _keyboard_key_(' ', ' ', this.img[3], 347, 292, '');
+                new _keyboard_key_('.com', '.com', this.img[1], 590, 292, '');
+                new _keyboard_key_('.', '.', this.img[1], 659, 292, '');
+                new _keyboard_key_('?123', '?123', this.img[1], 729, 292, '');
+                this.st = 30;
+            break;
+            case 30:
+                this.t.text = keyboard_buffer+(frameCount % 30 > 15 ? "_" : "");
+            break;
+        }
+    }
+    finalize(){
+        signal(this.t, s_kill);
+    }
+}
+//---------------------------------------------------------------------------------
+class _keyboard_key_ extends gameObject{
+    constructor(label, label_shift, tile, x, y, numeric_label){
+        super();
+        this.st = 0;
+        this.tile = tile;
+        this.label = label;
+        this.label_shift = label_shift;
+        this.xx = x;
+        this.yy = y;
+        this.numeric_label = numeric_label;
+    }
+    frame(){
+        switch(this.st){
+            case 0:
+                this.setGraph(this.tile);
+                this.size = this.father.size;
+                this.x = this.father.x + this.xx*this.size;
+                this.y = this.father.y + this.yy*this.size;
+                this.z = this.father.z+1;
+                this.visible = false;
+                this.st = 10;
+            break;
+            case 10:
+                if(!exists(this.father)){
+                    signal(this, s_kill);
+                    glz_egui_lock = false;
+                }
+                if(this.touched()){
+                    if(this.label==='<<'){
+                        keyboard_buffer = keyboard_buffer.substr(0, keyboard_buffer.length-1);
+                        this.visible = true;
+                        this.st = 20;
+                    }else if(this.label==='►'){
+                        this.visible = true;
+                        this.st = 30;
+                    }else if(this.label==='ctrl'){
+                        switch(this.father.shift){
+                            case true:
+                                this.father.shift = false;
+                                this.visible = false;
+                                this.st = 40;
+                                break;
+                            case false:
+                                this.father.shift = true;
+                                this.visible = true;
+                                this.st = 40;
+                                break;
+                        }
+                    }else if(this.label==='?123'){
+                        switch(this.father.numeric){
+                            case true:
+                                this.father.numeric = false;
+                                this.visible = false;
+                                this.st = 40;
+                                break;
+                            case false:
+                                this.father.numeric = true;
+                                this.visible = true;
+                                this.st = 40;
+                                break;
+                        }
+                    }else{
+                        // SI NUM y num_label esta definida..
+                        if(this.father.numeric && this.numeric_label!==''){
+                            keyboard_buffer += this.numeric_label;
+                            this.visible = true;
+                        // SI NO NUM y num_label indefinida..
+                        }else{
+                            // SI SHIFT..
+                            if(this.father.shift){
+                                keyboard_buffer += this.label_shift;
+                                this.visible = true;
+                            // SI NO SHIFT..
+                            }else{
+                                keyboard_buffer += this.label;
+                                this.visible = true;
+                            }
+                        }
+                        this.st = 20;
+                    }
+                }
+            break;
+            case 20:
+                // aqui pintar si se quiere la tecla que se esta pulsando..
+                if(!this.touched()){
+                    this.visible = false;
+                    this.st = 10;
+                }
+                break;
+            case 30:
+                if(!this.touched()){
+                    signal(this.father, s_kill);
+                    this.st = 10;
+                }
+                break;
+            case 40:
+                if(!this.touched()){
+                    this.st = 10;
+                }
+
+                break;
+        }
+    }
+}
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+//=================================================================================
+//---------------------------------------------------------------------------------
