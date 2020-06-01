@@ -340,8 +340,8 @@ function glz_main_core(){
     for(var i=0; i<gameObjects.length; i++){
         if (gameObjects[i].statusKill) {
             gameObjects[i].finalize();
-            if(gameObjects[i].graph!=undefined){
-                app.stage.removeChild(gameObjects[i].graph);
+            if(gameObjects[i].sprite!==undefined){
+                app.stage.removeChild(gameObjects[i].sprite);
             }
             if(gameObjects[i].body_created){
                 World.remove(world, gameObjects[i].body);
@@ -427,6 +427,7 @@ function glz_main_core(){
 class gameObject{
     constructor(){
         this.graph;
+        this.sprite;
         this.x = 0;
         this.y = 0;
         this.z = 0;
@@ -469,21 +470,22 @@ class gameObject{
             this.y = this.body.position.y;            
             this.angle = degrees(this.body.angle);
         }
-        if(this.graph!=undefined){
-            this.graph.x = this.x;
-            this.graph.y = this.y;
-            this.graph.zIndex = this.z;
-            this.graph.anchor.x = this.cx;
-            this.graph.anchor.y = this.cy;
-            this.graph.alpha = this.alpha;
-            this.graph.rotation = -radians(this.angle);
+        
+        if(this.sprite!==undefined){
+            this.sprite.x = this.x;
+            this.sprite.y = this.y;
+            this.sprite.zIndex = this.z;
+            this.sprite.anchor.x = this.cx;
+            this.sprite.anchor.y = this.cy;
+            this.sprite.alpha = this.alpha;
+            this.sprite.rotation = -radians(this.angle);
 
             if(this.sizex===1 && this.sizey===1){
-                this.graph.scale.x = this.size;
-                this.graph.scale.y = this.size;
+                this.sprite.scale.x = this.size;
+                this.sprite.scale.y = this.size;
             }else{
-                this.graph.scale.x = this.sizex;
-                this.graph.scale.y = this.sizey;
+                this.sprite.scale.x = this.sizex;
+                this.sprite.scale.y = this.sizey;
             }
 
         }
@@ -492,25 +494,31 @@ class gameObject{
         // for override on polimorphic classes..
     }
     setGraph(texture){
+        this.graph = texture;
         if(_glz_render_filter_ === false ){
-            texture.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
+            this.graph.baseTexture.scaleMode = PIXI.SCALE_MODES.NEAREST;
         }
-        if(this.graph!==undefined){
-            app.stage.removeChild(this.graph);
+        
+        var sprite_undefined = false;
+        if(this.sprite!==undefined){
+            sprite_undefined = true;
         }
-        this.graph = new PIXI.Sprite(texture);
         this.draw();
-        app.stage.addChild(this.graph);
+        if(sprite_undefined===false){
+            this.sprite = new PIXI.Sprite(this.graph);
+            app.stage.addChild(this.sprite);
+        }else{
+            this.sprite.texture = this.graph;
+        }
     }
     tint(color){
-        //this.graph.tint = Math.random() * 0xFFFFFF;
-        this.graph.tint = color;
+        this.sprite.tint = color;
     }
     //=======================================================
     touched(){
-        if(this.graph===undefined){return;}
-        var width  = this.graph.texture.baseTexture.width;
-        var height = this.graph.texture.baseTexture.height;
+        if(this.sprite===undefined){return;}
+        var width  = this.sprite.texture.baseTexture.width;
+        var height = this.sprite.texture.baseTexture.height;
         var xmin = this.x-(width/2)*this.size;
         var xmax = this.x+(width/2)*this.size;
         var ymin = this.y-(height/2)*this.size;
@@ -583,19 +591,19 @@ class gameObject{
         switch(TYPE_BODY) {
             case TYPE_BOX:
                 if(this.sizex!=1 || this.sizey!=1 ){
-                    w = this.graph.texture.baseTexture.width*this.sizex;
-                    h = this.graph.texture.baseTexture.height*this.sizey;
+                    w = this.sprite.texture.baseTexture.width*this.sizex;
+                    h = this.sprite.texture.baseTexture.height*this.sizey;
                 } else{
-                    w = this.graph.texture.baseTexture.width*this.size;
-                    h = this.graph.texture.baseTexture.height*this.size;
+                    w = this.sprite.texture.baseTexture.width*this.size;
+                    h = this.sprite.texture.baseTexture.height*this.size;
                 }
                 this.body = Bodies.rectangle(this.x, this.y, w, h);
                 Matter.Body.setAngle(this.body, radians(this.angle));
                 World.add(engine.world, this.body);
                 break;
             case TYPE_CIRCLE:
-                w = this.graph.texture.baseTexture.width*this.size;
-                h = this.graph.texture.baseTexture.height*this.size;
+                w = this.sprite.texture.baseTexture.width*this.size;
+                h = this.sprite.texture.baseTexture.height*this.size;
                 this.body = Bodies.circle(this.x, this.y, w/2);
                 Matter.Body.setAngle(this.body, radians(this.angle));
                 World.add(world, this.body);
@@ -1398,14 +1406,14 @@ class scroll extends gameObject{
         this.offset = {x: 0, y: 0};
     }
     initialize(){
-        this.graph = new PIXI.TilingSprite(this.texture, this.width, this.height);
-        app.stage.addChild(this.graph);
+        this.sprite = new PIXI.TilingSprite(this.texture, this.width, this.height);
+        app.stage.addChild(this.sprite);
     }
     frame(){
-        this.graph.tileScale.x = this.tiling.x;
-        this.graph.tileScale.y = this.tiling.y;
-        this.graph.tilePosition.x = this.offset.x;
-        this.graph.tilePosition.y = this.offset.y;
+        this.sprite.tileScale.x = this.tiling.x;
+        this.sprite.tileScale.y = this.tiling.y;
+        this.sprite.tilePosition.x = this.offset.x;
+        this.sprite.tilePosition.y = this.offset.y;
     }
 }
 //----------------------------------------------------------------------------------
