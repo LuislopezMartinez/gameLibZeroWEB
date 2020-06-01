@@ -63,7 +63,7 @@ world.gravity.x = 0;
 //engine.positionIterations = 10;   // default 6.
 //engine.velocityIterations = 1;    // default 4.
 
-const GLZ_VERSION = 1.101;
+const GLZ_VERSION = 1.102;
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 function consoleInfoShow(){
