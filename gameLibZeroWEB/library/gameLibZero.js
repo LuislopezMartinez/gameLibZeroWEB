@@ -174,8 +174,6 @@ window.onload = function(){
     Waud.autoMute();
     initTouch();
     mouse = new Mouse();
-    //var canvas2d = document.getElementById("myCanvas");
-    //ctx = canvas2d.getContext("2d");
 
     fadeRect = PIXI.Sprite.from(PIXI.Texture.WHITE);
     fadeRect.width = width;
@@ -1935,34 +1933,59 @@ class _keyboard_key_ extends gameObject{
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------
-// GET TEXTURE PIXEL X/Y IN Uint8Array[ r, g, b, a ] format..
-function graphGetPixel(graph, x, y){
-    var w = graph.baseTexture.resource.width;
-    var offset = (w*y)+x;
-    var pixel = new Uint8Array([
-        graph.baseTexture.resource.data[offset],
-        graph.baseTexture.resource.data[offset+1],
-        graph.baseTexture.resource.data[offset+2],
-        graph.baseTexture.resource.data[offset+3]
-    ]);
-    return pixel;
+class loadPixels extends gameObject{
+    //https://developer.mozilla.org/es/docs/Web/Guide/HTML/Canvas_tutorial/Pixel_manipulation_with_canvas
+    constructor(pixiTextureMotherFucker){
+        super();
+        this.pixiTextureMotherFucker = pixiTextureMotherFucker;
+        this.st = 0;
+        this.img;
+        this.canvas;
+        this.ctx;
+        this.ready = false;
+    }
+    frame(){
+        switch(this.st){
+            case 0:
+                this.img = document.createElement('img');
+                this.img.src = this.pixiTextureMotherFucker.baseTexture.cacheId;
+                this.canvas = document.createElement('canvas');
+                this.canvas.width = this.pixiTextureMotherFucker.baseTexture.width;
+                this.canvas.height = this.pixiTextureMotherFucker.baseTexture.height;
+                this.ctx = this.canvas.getContext('2d');
+                this.img.onload = this.onLoadImage();
+                this.st = 10;
+            break;
+            case 10:
+                if(this.ready){
+                    this.ctx.drawImage(this.img, 0, 0);
+                    this.ctx.drawImage(this.img, 0, 0);
+                    this.img.style.display = 'none';
+                    this.st = 20;
+                }
+            break;
+            case 20:
+                // limbo..
+            break;
+        }
+    }
+    getPixel(x, y){
+        if(x>this.canvas.width || y>this.canvas.height || this.ready===false){
+            return undefined;
+        }
+        var pixel = this.ctx.getImageData(x, y, 1, 1);
+        return pixel.data;
+    }
+    getPixels(){
+        var pixels = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+        return pixels.data;
+    }
+    onLoadImage(){
+        this.ready = true;
+    }
 }
 //---------------------------------------------------------------------------------
-// SET TEXTURE PIXEL X/Y IN 0xrrggbb format..
-function graphSetPixel(graph, x, y, color){
-    var hex = Math.floor( color );
-    var r = ( hex >> 16 & 255 );
-    var g = ( hex >> 8 & 255 );
-    var b = ( hex & 255 );
-    var pixel = new Uint8Array([r, g, b, 255]);
-    var w = graph.baseTexture.resource.width;
-    var offset = (w*y)+x;
-    graph.baseTexture.resource.data[offset] = pixel[0];
-    graph.baseTexture.resource.data[offset+1] = pixel[1];
-    graph.baseTexture.resource.data[offset+2] = pixel[2];
-    graph.baseTexture.resource.data[offset+3] = pixel[3];
-}
+//---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
