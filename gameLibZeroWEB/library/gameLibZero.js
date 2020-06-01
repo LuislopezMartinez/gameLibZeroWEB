@@ -63,6 +63,23 @@ world.gravity.x = 0;
 //engine.positionIterations = 10;   // default 6.
 //engine.velocityIterations = 1;    // default 4.
 
+
+function consoleInfoShow(){
+    const GLZ_VERSION = 1.01;
+    const GLZ_TYPE = "GAME FRAMEWORK";
+    const args = [
+        `\n %c %c %c gameLibZero ${GLZ_VERSION} - ${GLZ_TYPE}  %c  %c  https://github.com/LuislopezMartinez  %c %c \n\n`,
+        'color: #000000; background: #030307; padding:5px 0;',
+        'background: #000000; padding:5px 0;',
+        'color: #ffffff; background: #0000ff; padding:5px 0;',
+        'background: #030307; padding:5px 0;',
+        'background: #6685ff; padding:5px 0;',
+        'background: #000000; padding:5px 0;',
+        'background: #000000; padding:5px 0;'
+    ];
+    console.log(...args);
+}
+
 //---------------------------------------------------------------------------------
 
 Events.on(engine, 'collisionEnd', function(event) {
@@ -148,6 +165,7 @@ var fps_time_start = 0; // marca el tiempo al inicio de la cuenta de frames..
 var fps_time_now = 0;   // marca el tiempo actual..
 
 window.onload = function(){
+    consoleInfoShow();
     window.addEventListener("resize", resizeGame);
     this.setup();
     window.onbeforeunload = null;
