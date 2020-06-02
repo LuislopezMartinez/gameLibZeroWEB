@@ -1939,55 +1939,59 @@ class _keyboard_key_ extends gameObject{
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
+var _glz_pixels_process_id_;
 class loadPixels extends gameObject{
-    //https://developer.mozilla.org/es/docs/Web/Guide/HTML/Canvas_tutorial/Pixel_manipulation_with_canvas
-    constructor(pixiTextureMotherFucker){
+    constructor(src){
         super();
-        this.pixiTextureMotherFucker = pixiTextureMotherFucker;
+        this.src = src;
         this.st = 0;
-        this.img;
-        this.canvas;
-        this.ctx;
+        this.pixels;
+        this.img = document.createElement("img");
         this.ready = false;
     }
     frame(){
         switch(this.st){
             case 0:
-                this.img = document.createElement('img');
-                this.img.src = this.pixiTextureMotherFucker.baseTexture.cacheId;
-                this.canvas = document.createElement('canvas');
-                this.canvas.width = this.pixiTextureMotherFucker.baseTexture.width;
-                this.canvas.height = this.pixiTextureMotherFucker.baseTexture.height;
-                this.ctx = this.canvas.getContext('2d');
-                this.img.onload = this.onLoadImage();
-                this.st = 10;
+                if(_glz_pixels_process_id_===undefined){
+                    _glz_pixels_process_id_ = this;
+                    this.img.src = this.src.baseTexture.cacheId;
+                    this.img.onload = this.onLoad;
+                    this.st = 10;
+                }
             break;
             case 10:
                 if(this.ready){
-                    this.ctx.drawImage(this.img, 0, 0);
-                    this.ctx.drawImage(this.img, 0, 0);
-                    this.img.style.display = 'none';
+                    _glz_pixels_process_id_ = undefined;
                     this.st = 20;
                 }
             break;
             case 20:
-                // limbo..
+                
             break;
         }
     }
+    onLoad(){
+        var canvas = document.createElement('canvas');
+        canvas.width = this.width;
+        canvas.height = this.height;
+        canvas.getContext('2d').drawImage(this, 0, 0, this.width, this.height);
+        var pixelData = canvas.getContext('2d').getImageData(0, 0, this.width, this.height).data;
+        _glz_pixels_process_id_.pixels = pixelData;
+        _glz_pixels_process_id_.ready = true;
+    }
     getPixel(x, y){
-        if(x>this.canvas.width || y>this.canvas.height || this.ready===false){
+        if(x>this.img.width || y>this.img.height || this.ready===false){
             return undefined;
         }
-        var pixel = this.ctx.getImageData(x, y, 1, 1);
-        return pixel.data;
+        if(x<0 || y<0){
+            return undefined;
+        }
+        var offset = ((this.img.width*y)+x)*4;
+        console.log(offset);
+        return [this.pixels[offset], this.pixels[offset+1], this.pixels[offset+2], this.pixels[offset+3]];
     }
     getPixels(){
-        var pixels = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
-        return pixels.data;
-    }
-    onLoadImage(){
-        this.ready = true;
+        return pixels;
     }
 }
 //---------------------------------------------------------------------------------
