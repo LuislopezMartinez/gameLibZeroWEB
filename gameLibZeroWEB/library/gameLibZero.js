@@ -63,7 +63,7 @@ world.gravity.x = 0;
 //engine.positionIterations = 10;   // default 6.
 //engine.velocityIterations = 1;    // default 4.
 
-const GLZ_VERSION = 1.102;
+const GLZ_VERSION = 1.103;
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 function consoleInfoShow(){
@@ -1986,6 +1986,50 @@ class loadPixels extends gameObject{
 }
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+//=================================================================================
+//---------------------------------------------------------------------------------
+// controlador de acceso al almacenamiento local de datos..
+class storage{
+    constructor(){
+        this.localStorage = window.localStorage;
+    }
+    get(key){
+        return this.localStorage.getItem(key);
+    }
+    set(key, value){
+        this.localStorage.setItem(key, value);
+    }
+    remove(key){
+        this.localStorage.removeItem(key);
+    }
+    clear(){
+        this.localStorage.clear();
+    }
+    available() {
+        try {
+            var storage = window['localStorage'],
+                x = '__storage_test__';
+            storage.setItem(x, x);
+            storage.removeItem(x);
+            return true;
+        }
+        catch(e) {
+            return e instanceof DOMException && (
+                // everything except Firefox
+                e.code === 22 ||
+                // Firefox
+                e.code === 1014 ||
+                // test name field too, because code might not be present
+                // everything except Firefox
+                e.name === 'QuotaExceededError' ||
+                // Firefox
+                e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+                // acknowledge QuotaExceededError only if there's something already stored
+                storage.length !== 0;
+        }
+    }
+}
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
