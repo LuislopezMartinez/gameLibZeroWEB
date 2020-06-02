@@ -28,6 +28,10 @@
  * 
  * 
  */
+
+const GLZ_VERSION = "1.2.0";
+const GLZ_TYPE = "GAME FRAMEWORK";
+
 const s_kill        = 77;
 const s_protected   = 777;
 const s_unprotected = 7777;
@@ -48,6 +52,11 @@ const PLASTIC = 4;
 const RUBBER  = 5;
 const HUMAN   = 6;
 
+const SOCKET_CONNECTED = 21;
+const SOCKET_ERROR     = 22;
+const SOCKET_CLOSED    = 23;
+
+const NET_TOK_DATA     = '~';
 // module aliases..
 var Engine = Matter.Engine;
 var World = Matter.World;
@@ -62,9 +71,6 @@ world.gravity.x = 0;
 //engine.enableSleeping = true;     // default false.
 //engine.positionIterations = 10;   // default 6.
 //engine.velocityIterations = 1;    // default 4.
-
-const GLZ_VERSION = 1.103;
-const GLZ_TYPE = "GAME FRAMEWORK";
 
 function consoleInfoShow(){
     const args = [
@@ -2030,6 +2036,111 @@ class storage{
         }
     }
 }
+//---------------------------------------------------------------------------------
+//=================================================================================
+//---------------------------------------------------------------------------------
+// CREA UN CLIENTE DE WEBSOCKET PREPARADO PARA LA NETLIBZERO_SERVER DE PROCESSING..
+// ESTE CONSTRUCTOR ESTA INTEGRADO CON EL SISTEMA DE netMessage() muy sencillo de usar.
+function createClient(host, port){
+    var ws_client = new WebSocket(host+':'+port);
+    ws_client.status = 0;
+    // SET BET EVENTS TO WEB_SOCKET..
+    ws_client.addEventListener('open', function (event) {
+        ws_client.status = SOCKET_CONNECTED;
+        onNetOpen(event);
+    });
+    ws_client.addEventListener('message', function (event) {
+        ws_client.status = SOCKET_CONNECTED;
+        onNetMessage(event.data.split(NET_TOK_DATA));
+    });
+    ws_client.addEventListener('error', function (event) {
+        ws_client.status = SOCKET_ERROR;
+        onNetError(event);
+    });
+    ws_client.addEventListener('close', function (event) {
+        ws_client.status = SOCKET_CLOSED;
+        onNetClose(event);
+    });
+    return ws_client;
+}
+// CREA UN CLIENTE DE WEBSOCKET STANDAR..
+// TODO A PELO A TU ROYO MARCELO..
+function createWsClient(host, port){
+    var ws_client = new WebSocket(host+':'+port);
+    ws_client.status = 0;
+    // SET BET EVENTS TO WEB_SOCKET..
+    ws_client.addEventListener('open', function (event) {
+        ws_client.status = SOCKET_CONNECTED;
+        onNetWsOpen(event);
+    });
+    ws_client.addEventListener('message', function (event) {
+        ws_client.status = SOCKET_CONNECTED;
+        onNetWsMessage(event);
+    });
+    ws_client.addEventListener('error', function (event) {
+        ws_client.status = SOCKET_ERROR;
+        onNetWsError(event);
+    });
+    ws_client.addEventListener('close', function (event) {
+        ws_client.status = SOCKET_CLOSED;
+        onNetClose(event);
+    });
+    return ws_client;
+}
+//---------------------------------------------------------------------------------
+function closeClient(ws_socket){
+    if(ws_socket!==undefined){
+        ws_socket.close();
+    }
+}
+//---------------------------------------------------------------------------------
+class netMessage{
+    constructor(wsocket){
+        this.wsocket = wsocket;
+        this.buffer = "";
+        this.NET_TOK_DATA = '~';
+    }
+    add(token){
+        var type = typeof(token);
+        switch(type){
+            case "string":
+                // ADD SIMPLE STRING TO MESSAGE..
+                if(this.buffer===''){
+                    this.buffer += token;
+                }else{
+                    this.buffer += this.NET_TOK_DATA + token;
+                }
+            break;
+            case "object":
+                // ADD STRINGLIST TO MESSAGE..
+                for(var i=0; i<token.data.length; i++){
+                    this.add(token.get(i));
+                }
+            break;
+        }
+    }
+
+    send(){
+        this.wsocket.send(this.buffer);
+    }
+
+}
+// processing compatibility layer for fantastic StringList() of java..
+class StringList{
+    constructor(){
+        this.data = [];
+    }
+    append(dato){
+        this.data.push(dato);
+    }
+    get(index){
+        return this.data[index];
+    }
+    size(){
+        return this.data.length;
+    }
+}
+//---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
