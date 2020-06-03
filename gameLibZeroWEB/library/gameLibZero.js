@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.2.0";
+const GLZ_VERSION = "1.2.1";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -2145,6 +2145,22 @@ class StringList{
     }
 }
 //---------------------------------------------------------------------------------
+//=================================================================================
+//---------------------------------------------------------------------------------
+// processing compatibility layer for fantastic loadLines()..
+function loadLines(filename){
+    var client = new XMLHttpRequest();
+    client.onload = function(){
+        this.ready = true;
+    };
+    client.open("GET", filename);
+    client.send();
+    client.ready = false;
+    client.get = function(){
+        return this.response.split('\n');
+    }
+    return client;
+}
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
