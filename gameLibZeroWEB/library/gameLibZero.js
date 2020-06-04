@@ -72,6 +72,12 @@ world.gravity.x = 0;
 //engine.positionIterations = 10;   // default 6.
 //engine.velocityIterations = 1;    // default 4.
 
+function setGravity(x, y){
+    world.gravity.y = y;
+    world.gravity.x = x;
+}
+
+
 function consoleInfoShow(){
     const args = [
         `\n %c %c %c gameLibZeroWEB ${GLZ_VERSION} - ${GLZ_TYPE}  %c  %c  https://github.com/LuislopezMartinez  %c %c \n\n`,
@@ -205,6 +211,9 @@ function sin(num){
 }
 function cos(num){
     return Math.cos(num);
+}
+function abs(num){
+    return Math.abs(num);
 }
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -763,16 +772,31 @@ class gameObject{
             return this.body.velocity;
         }
     }
+    setVelocity(v){
+        if(this.body_created){
+            Matter.Body.setVelocity( this.body, v);
+        }
+    }
     //-------------------------------------------------------
     getVx(){
         if(this.body_created){
             return this.body.velocity.x;
         }
     }
+    setVx(vx){
+        if(this.body_created){
+            Matter.Body.setVelocity( this.body, {x: vx, y: this.body.velocity.y});
+        }
+    }
     //-------------------------------------------------------
     getVy(){
         if(this.body_created){
             return this.body.velocity.y;
+        }
+    }
+    setVy(vy){
+        if(this.body_created){
+            Matter.Body.setVelocity( this.body, {x: this.body.velocity.x, y: vy});
         }
     }
     //-------------------------------------------------------
@@ -882,7 +906,8 @@ class gameObject{
                 
                 for(var j=0; j<glz_collisions[i].activeContacts.length; j++){
                     ang = this.getAngle(glz_collisions[i].activeContacts[j].vertex.x, glz_collisions[i].activeContacts[j].vertex.y);
-                    //console.log(ang);
+                    if(ang<0){ang+=360;}
+                    console.log(ang);
                     if ( ang > angA && ang < angB ) {
                         return true;
                     }
@@ -892,7 +917,8 @@ class gameObject{
                 
                 for(var j=0; j<glz_collisions[i].activeContacts.length; j++){
                     ang = this.getAngle(glz_collisions[i].activeContacts[j].vertex.x, glz_collisions[i].activeContacts[j].vertex.y);
-                    //console.log(ang);
+                    if(ang<0){ang+=360;}
+                    console.log(ang);
                 }
                 if ( ang > angA && ang < angB ) {
                         return true;
@@ -2165,12 +2191,14 @@ function loadScene(filename){
                     Matter.Body.setAngle(body, radians(0));
                     World.add(engine.world, body);
                     polygon = false;
+                    /*
                     console.log("------------------------------------------------------------");
                     console.log("Name: ", polygon_name);
                     console.log("Meta: ", polygon_meta);
                     console.log("Sensor: ", polygon_sensor);
                     console.log("Geometry: ", geometry);
                     console.log("Body: ", body);
+                    */
                 break;
             }
         }
