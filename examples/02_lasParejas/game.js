@@ -63,9 +63,7 @@ function main(){
                 text_inicio.color = 0x000000;
                 signal(text_inicio, s_kill);
                 fadeOff(500);
-                //console.log(snd[0]._options.loop);
-                snd[0]._options.loop = true;
-                snd[0].play();
+                soundPlay(snd[0], 0.5, true);
                 ST = 30;
             }
         break;

@@ -12,7 +12,7 @@ function setup(){                       // first time execution code..
 function main(){                        // game loop..
     switch(ST){
         case 0:
-            loader = new loadImages("data/images/", 1);
+            loader = new loadImages("data/images/", 0);
             ST = 10;
         break;
         case 10:

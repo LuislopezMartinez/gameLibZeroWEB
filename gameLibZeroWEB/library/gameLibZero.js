@@ -176,8 +176,7 @@ window.onload = function(){
     this.setup();
     window.onbeforeunload = null;
     resizeGame();
-    Waud.init();
-    Waud.autoMute();
+    // audio init..
     initTouch();
     mouse = new Mouse();
 
@@ -977,81 +976,6 @@ class loadImages extends gameObject{
     }
 }
 //----------------------------------------------------------------------------------
-class loadSounds extends gameObject{
-    constructor(path, num){
-        super();
-        this.st = 0;
-        this.path = path;
-        this.dat = [];
-        this.numFiles = num;
-        this.pos = 0;
-        this.name = "";
-        this.ext = ".mp3";
-        this.ready = false;
-        this.progress = 0.0;    // percent progress of load files..
-        this.delta = 0;         // percent up per file..
-    }
-    initialize(){
-        this.delta = 100/(this.numFiles);
-    }
-    frame(){
-        switch(this.st){
-            case 0:
-                if(this.pos<=this.numFiles){
-                    if(this.pos<10){
-                        this.name = "0" + str(this.pos);
-                    }else{
-                        this.name = str(this.pos);
-                    }
-                    this.dat[this.pos] = new WaudSound(this.path+this.name+this.ext, { autoplay: false, loop: false, volume: 0.5 });
-                    this.pos++;
-                }else{
-                    // check if load all files completed..
-                    var completed = true;
-                    let totalFiles = Number(this.numFiles);     // sin Number() no funciona el for.. puto JS..
-                    for(var i=0; i<=totalFiles; i++){
-                        
-                        if(this.dat[i]!==undefined){
-                            if(!this.dat[i].isReady()){
-                                completed = false;
-                            }
-                        }else{
-                            completed = false;
-                        }
-
-                    }
-                    if(completed===true){
-                        this.ready = true;
-                        this.st = 10;
-                        //console.log("Audio files loaded!");
-                    }
-                }
-            break;
-            case 10:
-
-            break;
-        }
-    }
-    get(){
-        return this.dat;
-    }
-}
-//----------------------------------------------------------------------------------
-class soundPlayTimed extends gameObject{
-    constructor(snd, millis){
-        super();
-        this.startTime = Date.now();
-        this.millis = millis;
-        this.snd = snd;
-    }
-    
-    frame(){
-        if(Date.now()-this.startTime>this.millis){
-            this.snd.play();
-            signal(this, s_kill);
-        }
-    }
-}
 //----------------------------------------------------------------------------------
 //==================================================================================
 //----------------------------------------------------------------------------------
@@ -1468,38 +1392,7 @@ class scroll extends gameObject{
 //----------------------------------------------------------------------------------
 //==================================================================================
 //----------------------------------------------------------------------------------
-function soundPlay(snd, volume, loop){
-    switch(arguments.length){
-        case 1:
-            snd.play();
-        break;
-        case 2:
-            snd._options.volume = volume;
-            snd.play();
-        break;
-        case 3:
-            snd._options.volume = volume;
-            snd._options.loop = loop;
-            snd.play();
-        break;
-    }
-}
-//----------------------------------------------------------------------------------
-function soundIsPlaying(snd){
-    return snd.isPlaying();
-}
-//----------------------------------------------------------------------------------
-function soundStop(snd){
-    snd.stop();
-}
-//----------------------------------------------------------------------------------
-function soundSetVolume(snd, volume){
-    snd._options.volume = volume;
-}
-//----------------------------------------------------------------------------------
-function soundSetLoop(snd, loop){
-    snd._options.loop = loop;
-}
+
 //----------------------------------------------------------------------------------
 //==================================================================================
 //----------------------------------------------------------------------------------
@@ -2294,7 +2187,130 @@ function loadScene(filename){
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
+class loadSounds extends gameObject{
+    constructor(path, num){
+        super();
+        this.st = 0;
+        this.path = path;
+        this.dat = [];
+        this.numFiles = num;
+        this.pos = 0;
+        this.name = "";
+        this.ext = ".mp3";
+        this.ready = false;
+        this.progress = 0.0;    // percent progress of load files..
+        this.delta = 0;         // percent up per file..
+    }
+    initialize(){
+        this.delta = 100/(this.numFiles);
+    }
+    frame(){
+        switch(this.st){
+            case 0:
+                if(this.pos<=this.numFiles){
+                    if(this.pos<10){
+                        this.name = "0" + str(this.pos);
+                    }else{
+                        this.name = str(this.pos);
+                    }
+                    this.dat[this.pos] = new Howl({src: [this.path+this.name+this.ext]});
+                    this.pos++;
+                }else{
+                    // check if load all files completed..
+                    var completed = true;
+                    let totalFiles = Number(this.numFiles);     // sin Number() no funciona el for.. puto JS..
+                    for(var i=0; i<=totalFiles; i++){
+                        
+                        if(this.dat[i]!==undefined){
+                            if(this.dat[i]._state !== "loaded"){
+                                completed = false;
+                            }
+                        }else{
+                            completed = false;
+                        }
 
+                    }
+                    if(completed===true){
+                        this.ready = true;
+                        this.st = 10;
+                    }
+                }
+            break;
+            case 10:
+
+            break;
+        }
+    }
+    get(){
+        return this.dat;
+    }
+}
+//----------------------------------------------------------------------------------
+class soundPlayTimed extends gameObject{
+    constructor(snd, millis){
+        super();
+        this.startTime = Date.now();
+        this.millis = millis;
+        this.snd = snd;
+    }
+    
+    frame(){
+        if(Date.now()-this.startTime>this.millis){
+            this.snd.play();
+            signal(this, s_kill);
+        }
+    }
+}
+
+function soundPlay(snd, volume, loop){
+    switch(arguments.length){
+        case 1:
+            snd.play();
+        break;
+        case 2:
+            snd.volume(volume);
+            snd.play();
+        break;
+        case 3:
+            snd.volume(volume);
+            snd.loop = loop;
+            snd.play();
+        break;
+    }
+}
+//----------------------------------------------------------------------------------
+function soundIsPlaying(snd){
+    return snd.playing();
+}
+//----------------------------------------------------------------------------------
+function soundStop(snd){
+    snd.stop();
+}
+//----------------------------------------------------------------------------------
+function soundSetVolume(snd, volume){
+    snd.volume(volume);
+}
+function soundGetVolume(snd){
+    return snd.volume;
+}
+//----------------------------------------------------------------------------------
+function soundSetLoop(snd, loop){
+    snd.loop(loop);
+}
+function soundGetLoop(snd){
+    return snd.loop;
+}
+//----------------------------------------------------------------------------------
+function soundSetRate(snd, rate){
+    if(rate>4.0){
+        console.log("WARNING: soundSetRate(rate): rate too high.  max value: 4.0");
+    }else{
+        snd.rate(rate);
+    }
+}
+function soundGetRate(snd){
+    return snd._rate;
+}
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
