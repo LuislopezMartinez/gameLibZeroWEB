@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.2.91";
+const GLZ_VERSION = "1.3.00";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
