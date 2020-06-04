@@ -54,10 +54,13 @@ function main(){
 }
 //---------------------------------------------------------------------------------
 class proceso extends gameObject{
-    st = 0;
-    counter = 0;
-    delta = random(1, 5);
-    vel = 5;
+    constructor(){
+        super();
+        this.st = 0;
+        this.counter = 0;
+        this.delta = random(1, 5);
+        this.vel = 5;
+    }
     frame(){
         switch(this.st){
             case 0:
