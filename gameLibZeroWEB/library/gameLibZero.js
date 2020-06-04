@@ -483,6 +483,7 @@ class gameObject{
         this.id;
         this.father = _id_;
         this.visible = true;
+        this.mask;                  // sprite para hacer el clipping..      esto es la mascara..
     }
     initialize(){
 
@@ -543,6 +544,25 @@ class gameObject{
     }
     tint(color){
         this.sprite.tint = color;
+    }
+    createMask(texture){
+        if(this.sprite!==undefined){
+            this.mask = new PIXI.Sprite(texture);
+            this.sprite.mask = this.mask;
+            this.mask.anchor.x = 0.5;
+            this.mask.anchor.y = 0.5;
+            app.stage.addChild(this.mask);
+        }else{
+            console.log("%c WARNING: gameObject without graph..  no masking possible.",  'color: #ff0000; background: #ffffff');
+        }
+     }
+    removeMask(){
+        if(this.sprite!==undefined){
+            if(this.mask!==undefined){
+                app.stage.removeChild(this.mask);
+                this.sprite.mask = undefined;
+            }
+        }
     }
     //=======================================================
     touched(){
