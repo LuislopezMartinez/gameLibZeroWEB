@@ -204,6 +204,9 @@ window.onload = function(){
 function sin(num){
     return Math.sin(num);
 }
+function cos(num){
+    return Math.cos(num);
+}
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 function random(min, max){
@@ -344,6 +347,8 @@ function letMeAlone() {
 //----------------------------------------------------------------------------------
 function glz_main_core(){
 
+    // cambiar background color en caliente..
+    app.renderer.backgroundColor = backgroundColor;
 
     // MAIN LOOP..
     _id_ = undefined;
@@ -530,6 +535,7 @@ class gameObject{
         this.draw();
         if(sprite_undefined===false){
             this.sprite = new PIXI.Sprite(this.graph);
+            this.draw();
             app.stage.addChild(this.sprite);
         }else{
             this.sprite.texture = this.graph;
@@ -899,7 +905,6 @@ class loadImages extends gameObject{
         this.numFiles = numFiles;
         this.st = 0;
         this.pos = 0;
-        this.numfiles ;
         this.ext = ".png";
         this.name = "";
         this.nameCode = "";
@@ -1458,6 +1463,10 @@ function soundPlay(snd, volume, loop){
             snd.play();
         break;
     }
+}
+//----------------------------------------------------------------------------------
+function soundIsPlaying(snd){
+    return snd.isPlaying();
 }
 //----------------------------------------------------------------------------------
 function soundStop(snd){
