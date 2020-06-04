@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.2.9";
+const GLZ_VERSION = "1.2.91";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -1154,7 +1154,7 @@ class Mouse extends gameObject{
         for(var i=0; i<13;i++){
             this.points.push( {active: false, x: 0, y: 0} );
         }
-
+        signal(this, s_protected);
     }
     initialize(){
         this.body_created = true;
