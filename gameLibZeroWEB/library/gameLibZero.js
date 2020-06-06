@@ -176,6 +176,8 @@ var fps_flag = false;   // se pone a true cuando pasan 1000 milisegundos..
 var fps_time_start = 0; // marca el tiempo al inicio de la cuenta de frames..
 var fps_time_now = 0;   // marca el tiempo actual..
 
+var globalVolume = 1.0;
+
 window.onload = function(){
     consoleInfoShow();
     window.addEventListener("resize", resizeGame);
@@ -657,6 +659,8 @@ class gameObject{
                 }
                 this.body = Bodies.rectangle(this.x, this.y, w, h);
                 Matter.Body.setAngle(this.body, radians(this.angle));
+                this.body.glz_name = "";
+                this.body.glz_meta = "";
                 World.add(engine.world, this.body);
                 break;
             case TYPE_CIRCLE:
@@ -664,6 +668,8 @@ class gameObject{
                 h = this.sprite.texture.baseTexture.height*this.size;
                 this.body = Bodies.circle(this.x, this.y, w/2);
                 Matter.Body.setAngle(this.body, radians(this.angle));
+                this.body.glz_name = "";
+                this.body.glz_meta = "";
                 World.add(world, this.body);
                 break;
         }
@@ -846,6 +852,27 @@ class gameObject{
         }
         return false;
     }
+    //---------------------------------------------------------------------------------
+    // check collision with polygon name created with szenner..
+    collisionPoly(polyName){
+        for(var i=0; i<glz_collisions.length; i++){
+            if( glz_collisions[i].bodyA.id == this.id){
+                if( glz_collisions[i].bodyB.glz_name == polyName ){
+                return glz_collisions[i].bodyB.glz_meta;
+                }
+            } else if(glz_collisions[i].bodyB.id == this.id){
+                if( glz_collisions[i].bodyA.glz_name == polyName ){
+                return glz_collisions[i].bodyA.glz_meta;
+                }
+            }
+        }
+        return undefined;
+    }
+    //-------------------------------------------------------
+    collisionBody(name){
+        // funcion que retorna si estamos en contacto con un cuerpo por su nombre..
+        // esto es para detectar colisiones con zonas seteadas en SZENNER..
+    }
     //-------------------------------------------------------
     collisionType(type){
         
@@ -907,7 +934,7 @@ class gameObject{
                 for(var j=0; j<glz_collisions[i].activeContacts.length; j++){
                     ang = this.getAngle(glz_collisions[i].activeContacts[j].vertex.x, glz_collisions[i].activeContacts[j].vertex.y);
                     if(ang<0){ang+=360;}
-                    console.log(ang);
+                    //console.log(ang);
                     if ( ang > angA && ang < angB ) {
                         return true;
                     }
@@ -917,8 +944,8 @@ class gameObject{
                 
                 for(var j=0; j<glz_collisions[i].activeContacts.length; j++){
                     ang = this.getAngle(glz_collisions[i].activeContacts[j].vertex.x, glz_collisions[i].activeContacts[j].vertex.y);
-                    if(ang<0){ang+=360;}
-                    console.log(ang);
+                    //if(ang<0){ang+=360;}
+                    //console.log(ang);
                 }
                 if ( ang > angA && ang < angB ) {
                         return true;
@@ -1134,6 +1161,8 @@ class Mouse extends gameObject{
         this.body.isStatic = true;
         World.add(world, this.body);
         Matter.Body.setStatic(this.body, true);
+        this.body.glz_name = "";
+        this.body.glz_meta = "";
     }
     frame() {
         if(this.oldX===this.x && this.oldY===this.y){
@@ -2274,6 +2303,7 @@ class loadSounds extends gameObject{
     }
 }
 //----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
 class soundPlayTimed extends gameObject{
     constructor(snd, millis){
         super();
@@ -2284,7 +2314,7 @@ class soundPlayTimed extends gameObject{
     
     frame(){
         if(Date.now()-this.startTime>this.millis){
-            this.snd.play();
+            soundPlay(this.snd);
             signal(this, s_kill);
         }
     }
@@ -2293,14 +2323,15 @@ class soundPlayTimed extends gameObject{
 function soundPlay(snd, volume, loop){
     switch(arguments.length){
         case 1:
+            snd.volume(snd._volume*globalVolume);
             snd.play();
         break;
         case 2:
-            snd.volume(volume);
+            snd.volume(volume*globalVolume);
             snd.play();
         break;
         case 3:
-            snd.volume(volume);
+            snd.volume(volume*globalVolume);
             snd.loop = loop;
             snd.play();
         break;
@@ -2316,7 +2347,13 @@ function soundStop(snd){
 }
 //----------------------------------------------------------------------------------
 function soundSetVolume(snd, volume){
-    snd.volume(volume);
+    // 1 parameter for set global volume..
+    // 2 parameter for set specific sound volume..
+    if(arguments.length==1){
+        globalVolume = snd;
+    }else{
+        snd.volume(volume);
+    }
 }
 function soundGetVolume(snd){
     return snd.volume;
