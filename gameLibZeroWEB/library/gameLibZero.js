@@ -45,12 +45,13 @@ const TYPE_BOX    = -1;
 const TYPE_CIRCLE = -2;
 const TYPE_SENSOR = -3;
 // materiales disponibles para la simulación física..
-const WOOD    = 1;
-const METAL   = 2;
-const STONE   = 3;
-const PLASTIC = 4;
-const RUBBER  = 5;
-const HUMAN   = 6;
+const TYPE_WOOD    = 1;
+const TYPE_METAL   = 2;
+const TYPE_STONE   = 3;
+const TYPE_PLASTIC = 4;
+const TYPE_RUBBER  = 5;
+const TYPE_HUMAN   = 6;
+const TYPE_ICE    = 7;
 
 const SOCKET_CONNECTED = 21;
 const SOCKET_ERROR     = 22;
@@ -517,7 +518,7 @@ class gameObject{
             this.sprite.anchor.x = this.cx;
             this.sprite.anchor.y = this.cy;
             this.sprite.alpha = this.alpha;
-            this.sprite.rotation = -radians(this.angle);
+            this.sprite.rotation = radians(this.angle);
             this.sprite.visible = this.visible;
 
             if(this.sizex===1 && this.sizey===1){
@@ -529,6 +530,7 @@ class gameObject{
             }
 
         }
+        
     }
     finalize(){
         // for override on polimorphic classes..
@@ -608,17 +610,17 @@ class gameObject{
             
             if(this.body_created){
                 this.x = this.x + dist * Math.cos(radians(this.angle));
-                this.y = this.y - dist * Math.sin(radians(this.angle));
+                this.y = this.y + dist * Math.sin(radians(this.angle));
                 Matter.Body.setPosition(this.body, {x: this.x, y: this.y});
             }else{
                 this.x = this.x + dist * Math.cos(radians(this.angle));
-                this.y = this.y - dist * Math.sin(radians(this.angle));
+                this.y = this.y + dist * Math.sin(radians(this.angle));
             }
             
         }else if (arguments.length == 2) {
             if(this.body_created){
                 this.x = this.x + dist * Math.cos(radians(angle));
-                this.y = this.y - dist * Math.sin(radians(angle));
+                this.y = this.y + dist * Math.sin(radians(angle));
                 Matter.Body.setPosition(this.body, {x: this.x, y: this.y});
             }else{
                 this.x = this.x + dist * Math.cos(radians(angle));
@@ -681,35 +683,40 @@ class gameObject{
     //-------------------------------------------------------
     setMaterial(material){
         switch(material) {
-            case WOOD:
+            case TYPE_WOOD:
                 this.body.friction = 0.50;
                 this.body.restitution = 0.17;
                 this.body.density = 0.57;
                 break;
-            case METAL:
+            case TYPE_METAL:
                 this.body.friction = 0.13;
                 this.body.restitution = 0.17;
                 this.body.density = 7.80;
                 break;
-            case STONE:
+            case TYPE_STONE:
                 this.body.friction = 0.75;
                 this.body.restitution = 0.05;
                 this.body.density = 2.40;
                 break;
-            case PLASTIC:
+            case TYPE_PLASTIC:
                 this.body.friction = 0.38;
                 this.body.restitution = 0.09;
                 this.body.density = 0.95;
                 break;
-            case RUBBER:
+            case TYPE_RUBBER:
                 this.body.friction = 0.75;
                 this.body.restitution = 0.95;
                 this.body.density = 1.70;
                 break;
-            case HUMAN:
+            case TYPE_HUMAN:
                 this.body.friction = 1.00;
                 this.body.restitution = 0.00;
                 this.body.density = 0.95;
+                break;
+            case TYPE_ICE:
+                this.body.friction = 0.003;
+                this.body.restitution = 0.05;
+                this.body.density = 0.92;
                 break;
             case TYPE_SENSOR:
                 this.setSensor(true);
