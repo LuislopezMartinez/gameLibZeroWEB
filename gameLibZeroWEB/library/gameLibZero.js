@@ -2339,7 +2339,7 @@ function soundPlay(snd, volume, loop){
         break;
         case 3:
             snd.volume(volume*globalVolume);
-            snd.loop = loop;
+            snd.loop(loop);
             snd.play();
         break;
     }
@@ -2386,7 +2386,37 @@ function soundGetRate(snd){
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
-
+function screenDrawGraphic(graph, x, y, angle, sizex, sizey, alpha){
+    new screenDrawGraphic_sprite(graph, x, y, angle, sizex, sizey, alpha);
+}
+/*
+function screenDrawText(font, size, text, align, x, y, color, alpha){
+    //..
+}
+*/
+//---------------------------------------------------------------------------------
+class screenDrawGraphic_sprite extends gameObject{
+    constructor(graph, x, y, angle, sizex, sizey, alpha){
+        super();
+        this.x = x;
+        this.y = y;
+        if(exists(this.father)){
+            this.z = this.father.z+1;
+        }
+        this.angle = angle;
+        this.sizex = sizex;
+        this.sizey = sizey;
+        this.alpha = alpha;
+        this.setGraph(graph);
+    }
+    initialize(){
+        signal(this, s_kill);
+    }
+    frame(){
+        // ..
+    }
+}
+//---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
