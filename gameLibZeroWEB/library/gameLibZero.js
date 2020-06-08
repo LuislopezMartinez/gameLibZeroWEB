@@ -185,6 +185,8 @@ var fps_time_now = 0;   // marca el tiempo actual..
 
 var globalVolume = 1.0;
 
+var screenDrawGraphic_sprite_list = []; // screenDrawGraphic calls..
+
 window.onload = function(){
     consoleInfoShow();
     window.addEventListener("resize", resizeGame);
@@ -398,6 +400,13 @@ function glz_main_core(){
 
     // SCAN GAMEPADS..
     scangamepads();
+
+
+    // CLEAR screenDrawGraphic CALLS..
+    for(var i=0; i<screenDrawGraphic_sprite_list.length; i++){
+        app.stage.removeChild(screenDrawGraphic_sprite_list[i]);
+    }
+
 
     for(var i=0; i<gameObjects.length; i++){
                 
@@ -2447,36 +2456,19 @@ function soundGetRate(snd){
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
-function screenDrawGraphic(graph, x, y, angle, sizex, sizey, alpha){
-    new screenDrawGraphic_sprite(graph, x, y, angle, sizex, sizey, alpha);
+function drawGraphic(graph, x, y, angle, sizex, sizey, alpha){
+    var s = new PIXI.Sprite(graph);
+    s.x = x;
+    s.y = y;
+    s.zIndex = _id_.z+1;
+    s.alpha = alpha;
+    s.rotation = radians(angle);
+    s.scale.x = sizex;
+    s.scale.y = sizey;
+    screenDrawGraphic_sprite_list.push(s);
+    app.stage.addChild(s);
 }
-/*
-function screenDrawText(font, size, text, align, x, y, color, alpha){
-    //..
-}
-*/
 //---------------------------------------------------------------------------------
-class screenDrawGraphic_sprite extends gameObject{
-    constructor(graph, x, y, angle, sizex, sizey, alpha){
-        super();
-        this.x = x;
-        this.y = y;
-        if(exists(this.father)){
-            this.z = this.father.z+1;
-        }
-        this.angle = angle;
-        this.sizex = sizex;
-        this.sizey = sizey;
-        this.alpha = alpha;
-        this.setGraph(graph);
-    }
-    initialize(){
-        signal(this, s_kill);
-    }
-    frame(){
-        // ..
-    }
-}
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
 //=================================================================================
