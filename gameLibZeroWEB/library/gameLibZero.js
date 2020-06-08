@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.3.00";
+const GLZ_VERSION = "1.3.11";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -78,6 +78,11 @@ function setGravity(x, y){
     world.gravity.x = x;
 }
 
+function advanceVector (x_, y_, dist, angle){
+    x_ = x_ + dist * Math.cos(radians(angle));
+    y_ = y_ + dist * Math.sin(radians(angle));
+    return {x:x_, y:y_};
+}
 
 function consoleInfoShow(){
     const args = [
@@ -140,7 +145,8 @@ Events.on(engine, 'collisionActive', function(event) {
 
 
 Events.on(world, 'afterAdd', function(event) {
-event.object.render.visible = false;            // al añadir un cuerpo al mundo le pongo la colision con el mouse en false..
+    event.object.render.visible = false;            // al añadir un cuerpo al mundo le pongo la colision con el mouse en false..
+    
 });
 
 //---------------------------------------------------------------------------------
@@ -604,6 +610,58 @@ class gameObject{
         return mouse.points[this.touch_id].active;
     }
     //=======================================================
+    getPoint(x, y){
+        var w = 0;
+        var h = 0;
+        if(this.sizex!=1 || this.sizey!=1 ){
+            w = this.sprite.texture.baseTexture.width*this.sizex;
+            h = this.sprite.texture.baseTexture.height*this.sizey;
+        } else{
+            w = this.sprite.texture.baseTexture.width*this.size;
+            h = this.sprite.texture.baseTexture.height*this.size;
+        }
+        var ox = x + (this.x - w*this.cx);
+        var oy = -y + (this.y + h*this.cy);
+        
+        var dst = this.getDist(ox, oy);
+        var ang = this.getAngle(ox, oy);
+        
+        var p = advanceVector(this.x, this.y, dst, ang+this.angle);
+        return p;
+    }
+    //=======================================================
+    fixToWorld(x, y){
+        var world_point = this.getPoint(x, y);
+        this.addContraint(world_point.x, world_point.y, x, y);
+    }
+    //=======================================================
+    addContraint( x_world, y_world, x_local, y_local ){
+        if(this.body===undefined){
+            console.log(    "%c WARNING: gameObject without body.",
+                            'color: #ff0000; background: #ffffff'
+                        );
+            return;
+        }
+        var w = 0;
+        var h = 0;
+        if(this.sizex!=1 || this.sizey!=1 ){
+            w = this.sprite.texture.baseTexture.width*this.sizex;
+            h = this.sprite.texture.baseTexture.height*this.sizey;
+        } else{
+            w = this.sprite.texture.baseTexture.width*this.size;
+            h = this.sprite.texture.baseTexture.height*this.size;
+        }
+        var x_body = -w/2 + x_local;
+        var y_body = -h/2 + y_local;
+        var constraint = Matter.Constraint.create({
+            pointA: { x: x_world, y: y_world },
+            bodyB: this.body,
+            pointB: { x: x_body, y: y_body }
+        });
+        this.local_glz_constraints.push(constraint);
+        World.add(engine.world, constraint);
+    }
+    //=======================================================
     advance(dist, angle){
         //dist = -dist;
         if(arguments.length == 1) {
@@ -760,6 +818,9 @@ class gameObject{
             var vy = -vel * sin((radians(angle)));
             Matter.Body.setVelocity(this.body, {x: this.body.velocity.x + vx, y: this.body.velocity.y + vy});
         }
+    }
+    addImpulse(angle, vel){
+        this.addVelocity(angle, vel);
     }
     //-------------------------------------------------------
     brakeVx(percent){
@@ -2417,6 +2478,10 @@ class screenDrawGraphic_sprite extends gameObject{
     }
 }
 //---------------------------------------------------------------------------------
+//---------------------------------------------------------------------------------
+//=================================================================================
+//---------------------------------------------------------------------------------
+
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
