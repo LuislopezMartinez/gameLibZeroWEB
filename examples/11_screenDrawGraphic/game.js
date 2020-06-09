@@ -34,6 +34,7 @@ function main(){                        // game loop..
             var alpha = 1;
             for(var i=0; i<num; i++){
                 screenDrawGraphic(img[0], x + i*50, y, angle, sizex, sizey, alpha);
+                console.log(x + i*50, y);
             }
             if(key(_LEFT)){
                 if(num>0){
@@ -45,6 +46,7 @@ function main(){                        // game loop..
                     num++;
                 }
             }
+            
         break;
     }
 }

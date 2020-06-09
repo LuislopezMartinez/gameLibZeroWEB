@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.3.11";
+const GLZ_VERSION = "1.4.00";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -369,6 +369,11 @@ function glz_main_core(){
     // cambiar background color en caliente..
     app.renderer.backgroundColor = backgroundColor;
 
+    // CLEAR screenDrawGraphic CALLS..
+    for(var i=0; i<screenDrawGraphic_sprite_list.length; i++){
+        app.stage.removeChild(screenDrawGraphic_sprite_list[i]);
+    }
+
     // MAIN LOOP..
     _id_ = undefined;
     if(frameCount>1){
@@ -400,13 +405,6 @@ function glz_main_core(){
 
     // SCAN GAMEPADS..
     scangamepads();
-
-
-    // CLEAR screenDrawGraphic CALLS..
-    for(var i=0; i<screenDrawGraphic_sprite_list.length; i++){
-        app.stage.removeChild(screenDrawGraphic_sprite_list[i]);
-    }
-
 
     for(var i=0; i<gameObjects.length; i++){
                 
@@ -510,12 +508,28 @@ class gameObject{
         this.father = _id_;
         this.visible = true;
         this.mask;                  // sprite para hacer el clipping..      esto es la mascara..
+        
+        this.onScene = false;
+        this.sceneId;
+        this.screenx = this.x;
+        this.screeny = this.y;
     }
     initialize(){
 
     }
     frame(){
         
+    }
+    setScene(idScene){
+        if(idScene.s===undefined){
+            console.log(    "%c WARNING: gameObject without graph not added to scene.",
+                            'color: #ff0000; background: #ffffff'
+                        );
+        }else{
+            this.onScene = true;
+            this.sceneId = idScene;
+            this.sprite.mask = idScene.s.mask;
+        }
     }
     draw(){
         this.oldx = this.x;
@@ -527,8 +541,15 @@ class gameObject{
         }
         
         if(this.sprite!==undefined){
-            this.sprite.x = this.x;
-            this.sprite.y = this.y;
+            if(this.onScene){
+                this.sprite.x = this.screenx;
+                this.sprite.y = this.screeny;
+                this.screenx = this.x + this.sceneId.x;
+                this.screeny = this.y + this.sceneId.y;
+            }else{
+                this.sprite.x = this.x;
+                this.sprite.y = this.y;
+            }
             this.sprite.zIndex = this.z;
             this.sprite.anchor.x = this.cx;
             this.sprite.anchor.y = this.cy;
@@ -2460,20 +2481,147 @@ function drawGraphic(graph, x, y, angle, sizex, sizey, alpha){
     var s = new PIXI.Sprite(graph);
     s.x = x;
     s.y = y;
-    s.zIndex = _id_.z+1;
+    if(exists(_id_)){
+        s.zIndex = _id_.z+1;
+    }
     s.alpha = alpha;
     s.rotation = radians(angle);
     s.scale.x = sizex;
     s.scale.y = sizey;
+    s.anchor.x = 0.5;
+    s.anchor.y = 0.5;
+    screenDrawGraphic_sprite_list.push(s);
+    app.stage.addChild(s);
+}
+//---------------------------------------------------------------------------------
+function screenDrawGraphic(graph, x, y, angle, sizex, sizey, alpha){
+    var s = new PIXI.Sprite(graph);
+    s.x = x;
+    s.y = y;
+    if(exists(_id_)){
+        s.zIndex = _id_.z+1;
+    }
+    s.alpha = alpha;
+    s.rotation = radians(angle);
+    s.scale.x = sizex;
+    s.scale.y = sizey;
+    s.anchor.x = 0.5;
+    s.anchor.y = 0.5;
     screenDrawGraphic_sprite_list.push(s);
     app.stage.addChild(s);
 }
 //---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
-//---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
+class scene extends gameObject{
+    constructor(img, x, y, w, h){
+        super();
+        this.st = 0;
+        // CREAR SPRITE PARA LA ESCENA..
+        this.s = new PIXI.Sprite(img);
+        this.s.x = x;
+        this.s.y = y;
+        if(exists(_id_)){
+            this.s.zIndex = _id_.z+1;
+        }
+        this.s.anchor.x = 0;
+        this.s.anchor.y = 0;
+        app.stage.addChild(this.s);
+        // CREAR SPRITE PARA LA MASCARA..
+        this.s.mask = new PIXI.Sprite(newGraph(w, h, 0xffffff));
+        this.s.mask.x = x;
+        this.s.mask.y = y;
+        this.s.mask.anchor.x = 0;
+        this.s.mask.anchor.y = 0;
+        app.stage.addChild(this.s.mask);
+        // ESTABLECER LIMITES DE DESPLAZAMIENTO..
+        this.LL = x-this.s.width + w;       // limit left..
+        this.LR = x;                        // limit right..
+        this.LU = y-this.s.height + h;      // limit up..
+        this.LD = y;                        // limit down..
+        // ESTABLECER LOS LIMITES DE INICIO DE MOVIMIENTO POR CAMARA..
+        this.camaraLimiteHorizontal = 50;   // limite inicio movimiento camara x..
+        this.camaraLimiteVertical = 50;     // limite inicio movimiento camara y..
+        this.CAM_LIMIT_LEFT  = x + this.camaraLimiteHorizontal;
+        this.CAM_LIMIT_RIGHT = x + w - this.camaraLimiteHorizontal;
+        this.CAM_LIMIT_UP    = y + this.camaraLimiteVertical;
+        this.CAM_LIMIT_DOWN  = y + h - this.camaraLimiteVertical;
+        // COLOCAR ESCENA EN POSICION INICIAL..
+        this.x = this.s.x;
+        this.y = this.s.y;
+        // POSICION DE LA CAMARA..
+        this.CX = x + w/2;  // posicion incicial de la camara..
+        this.CY = y + h/2;  // posicion inicial de la camara..
+        this.CV = 10;       // suavizado del seguimiento la camara..
+        this.gcam = newGraph(10, 10, 0xff00ff);
+        this.CID;           // camera id..
+    }
+    frame(){
+        switch(this.st){
+            case 0:
+                // CHECK IF CAMERA DEFINED..
+                if(this.CID!==undefined){
+                    this.cameraPosition(this.CID.screenx, this.CID.screeny);
+                }
 
+
+                // CHECK CAMERA INIT MOVEMENT LIMITS..
+                if(this.CX<this.CAM_LIMIT_LEFT){
+                    this.x -= (this.CX-this.CAM_LIMIT_LEFT)/this.CV;
+                }
+                if(this.CX>this.CAM_LIMIT_RIGHT){
+                    this.x -= (this.CX-this.CAM_LIMIT_RIGHT)/this.CV;
+                }
+                if(this.CY<this.CAM_LIMIT_UP){
+                    this.y -= (this.CY-this.CAM_LIMIT_UP)/this.CV;
+                }
+                if(this.CY>this.CAM_LIMIT_DOWN){
+                    this.y -= (this.CY-this.CAM_LIMIT_DOWN)/this.CV;
+                }
+
+
+                // CHECK MAX LIMITS..
+                if(this.x<this.LL){
+                    this.x = this.LL;
+                }
+                if(this.x>this.LR){
+                    this.x = this.LR;
+                }
+                if(this.y<this.LU){
+                    this.y = this.LU;
+                }
+                if(this.y>this.LD){
+                    this.y = this.LD;
+                }
+                this.s.x = this.x;
+                this.s.y = this.y;
+                drawGraphic(this.gcam, this.CX, this.CY, 0, 1 , 1, 1);
+
+            break;
+            case 10:
+
+            break;
+        }
+    }
+    cameraPosition(x, y){
+        this.CX += (x-this.CX)/this.CV;
+        this.CY += (y-this.CY)/this.CV;
+    }
+    setCamera(id){
+        if(id.sprite===undefined){
+            console.log(    "%c WARNING: camera without graph.",
+                            'color: #ff0000; background: #ffffff'
+                        );
+        }else{
+            this.CID = id;
+            id.onScene = true;
+            id.sceneId = this;
+            id.sprite.mask = this.s.mask;
+        }
+        
+    }
+}
 //---------------------------------------------------------------------------------
 //=================================================================================
 //---------------------------------------------------------------------------------
