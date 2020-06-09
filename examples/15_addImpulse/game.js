@@ -12,7 +12,6 @@ function setup(){                       // first time execution code..
 function main(){                        // game loop..
     switch(ST){
         case 0:
-            //setGravity(0, 1);
             new rectangulo();
             ST = 10;
         break;
@@ -27,6 +26,8 @@ class rectangulo extends gameObject{
     constructor(){
         super();
         this.st = 0;
+        this.local_glz_constraints = [];
+        this.gr = newGraph(5, 5, 0xff0000);
     }
     //--------------------------------------------------------------
     //--------------------------------------------------------------
@@ -40,22 +41,17 @@ class rectangulo extends gameObject{
                 this.st = 10;
             break;
             case 10:
-                this.addVy(0.01);
                 if(key(_LEFT)){
-                    var position = {x:0, y:0};
-                    var force = {x:0, y:-0.001};
-                    Matter.Body.applyForce(this.body, position, force);
-                    //this.addImpulse();
-                }
-                if(key(_RIGHT)){
-                    var position = {x:this.x+300, y:0};
-                    var force = {x:0*cos(radians()), y:-0.001};
-                    Matter.Body.applyForce(this.body, position, force);
-                    //this.addImpulse();
+                    this.addImpulseAtPoint(0, 10, this.angle, 0.1);
                 }
             break;
         }
     }
+    addImpulseAtPoint(x, y, ang, mod){
+        // ADD A IMPULSE AT LOCAL POINT WITH ANGLE AND MODULE..
+        var position = {x: x, y: y};
+        var force = {x: 0, y: 0};
+        Matter.Body.applyForce(this.body, position, force);
+    }
 }
-//---------------------------------------------------------------------------------
 //---------------------------------------------------------------------------------
