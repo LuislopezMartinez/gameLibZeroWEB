@@ -26,7 +26,7 @@ function main(){                        // game loop..
                 // escena en fullscreen..
                 //escena = new scene(img[0], 0, 0, width, height);  // imagen, x, y, ancho, alto
                 idPerso = new personaje();
-                escena.setCamera(idPerso)
+                escena.setCamera(idPerso);
 
                 for(var i=0; i<100; i++){
                     new cosaEnEscena();

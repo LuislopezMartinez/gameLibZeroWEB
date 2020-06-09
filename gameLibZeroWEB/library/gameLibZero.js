@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.4.00";
+const GLZ_VERSION = "1.4.01";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -257,6 +257,14 @@ function method (codeToExecute, gameObjectCaller){
 //----------------------------------------------------------------------------------
 function str(number){
     return number.toString();
+}
+//----------------------------------------------------------------------------------
+function nf(number, numDigits){
+    var s = str(number);
+    while(s.length<numDigits){
+        s = "0"+s;
+    }
+    return s;
 }
 //----------------------------------------------------------------------------------
 function int(floatvalue){
