@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.4.01";
+const GLZ_VERSION = "1.4.10";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -598,6 +598,10 @@ class gameObject{
             this.sprite.texture = this.graph;
         }
     }
+    setCenter(x, y){
+        this.cx = x/this.graph.width;
+        this.cy = y/this.graph.height;
+    }
     tint(color){
         this.sprite.tint = color;
     }
@@ -1021,9 +1025,9 @@ class gameObject{
         }
     }
     //-------------------------------------------------------
-    translate(x, y){
+    translate(x_, y_){
         if(this.body_created){
-            Matter.Body.setPosition(this.body, {x: x, y: y});
+            Matter.Body.setPosition(this.body, {x: x_, y: y_});
         }else{
             this.x = x;
             this.y = y;
