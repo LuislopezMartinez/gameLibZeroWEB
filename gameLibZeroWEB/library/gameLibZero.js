@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.4.10";
+const GLZ_VERSION = "1.4.11";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -2572,6 +2572,9 @@ class scene extends gameObject{
     frame(){
         switch(this.st){
             case 0:
+                // UPDATE ZORDER..
+                this.s.zIndex = this.z;
+
                 // CHECK IF CAMERA DEFINED..
                 if(this.CID!==undefined){
                     this.cameraPosition(this.CID.screenx, this.CID.screeny);
@@ -2616,9 +2619,25 @@ class scene extends gameObject{
             break;
         }
     }
-    cameraPosition(x, y){
-        this.CX += (x-this.CX)/this.CV;
-        this.CY += (y-this.CY)/this.CV;
+    cameraSmooth(suavizado){
+        if(suavizado<1){
+            suavizado=1;
+            console.log(    "%c WARNING: camera smotthing min value: 1.",
+                            'color: #ff0000; background: #ffffff'
+                        );
+
+        }
+        this.CV = suavizado;
+    }
+    cameraPosition(x, y, smooth){
+        if(smooth){
+            this.CX += (x-this.CX)/this.CV;
+            this.CY += (y-this.CY)/this.CV;
+        }else{
+            this.CX += (x-this.CX);
+            this.CY += (y-this.CY);
+        }
+        
     }
     setCamera(id){
         if(id.sprite===undefined){
