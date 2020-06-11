@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.4.11";
+const GLZ_VERSION = "1.4.12";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -1473,7 +1473,7 @@ class text extends gameObject{
             this.idText.style.fill = this.color;
             switch(this.align){
                 case LEFT:
-                    this.idText.x -= this.idText.texture.width/2;
+                    this.idText.x -= this.idText.texture.width;
                     this.idText.y -= this.idText.texture.height/2;
                 break;
                 case RIGHT:
