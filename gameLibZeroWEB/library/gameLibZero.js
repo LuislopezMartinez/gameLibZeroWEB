@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.4.12";
+const GLZ_VERSION = "1.4.22";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -861,8 +861,10 @@ class gameObject{
             Matter.Body.setVelocity(this.body, {x: this.body.velocity.x + vx, y: this.body.velocity.y + vy});
         }
     }
-    addImpulse(angle, vel){
-        this.addVelocity(angle, vel);
+    addImpulse(pos, ang, mod){
+        // ADD A IMPULSE AT LOCAL POINT WITH ANGLE AND MODULE..
+        var force = {x: mod * Math.cos(radians(ang)), y: mod * Math.sin(radians(ang))};
+        Matter.Body.applyForce(this.body, pos, force);
     }
     //-------------------------------------------------------
     brakeVx(percent){
@@ -2132,8 +2134,8 @@ class storage{
 //---------------------------------------------------------------------------------
 // CREA UN CLIENTE DE WEBSOCKET PREPARADO PARA LA NETLIBZERO_SERVER DE PROCESSING..
 // ESTE CONSTRUCTOR ESTA INTEGRADO CON EL SISTEMA DE netMessage() muy sencillo de usar.
-function createClient(host, port){
-    var ws_client = new WebSocket(host+':'+port);
+function createClient(host, port, page){
+    var ws_client = new WebSocket(host+':'+port+page);
     ws_client.status = 0;
     // SET BET EVENTS TO WEB_SOCKET..
     ws_client.addEventListener('open', function (event) {
@@ -2157,7 +2159,7 @@ function createClient(host, port){
 // CREA UN CLIENTE DE WEBSOCKET STANDAR..
 // TODO A PELO A TU ROYO MARCELO..
 function createWsClient(host, port){
-    var ws_client = new WebSocket(host+':'+port);
+    var ws_client = new WebSocket(host+':'+port+page);
     ws_client.status = 0;
     // SET BET EVENTS TO WEB_SOCKET..
     ws_client.addEventListener('open', function (event) {

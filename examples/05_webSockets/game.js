@@ -11,8 +11,9 @@ function setup(){                       // first time execution code..
 function main(){                        // game loop..
     switch(ST){
         case 0:
-            cli = createClient("ws://192.168.1.110", 7777);
-            ST = 10;
+            cli = createClient("ws://192.168.1.110", 7777, "");
+            
+            ST = 10000;
         break;
         case 10:
             if(cli.status === SOCKET_CONNECTED){
