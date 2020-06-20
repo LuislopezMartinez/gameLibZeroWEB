@@ -64,10 +64,11 @@ class nave extends gameObject{
                 this.pointLeft = this.getPoint(15, 30);
                 this.pl.x = this.pointLeft.x;
                 this.pl.y = this.pointLeft.y;
+                this.pl.angle = this.angle;
                 this.pointRight= this.getPoint(57, 27);
                 this.pr.x = this.pointRight.x;
                 this.pr.y = this.pointRight.y;
-
+                this.pr.angle = this.angle;
                 if(key(_LEFT)){
                     this.addImpulse(this.pointLeft, this.angle-90, 0.0001);
                     if(this.pl.sizey<0.3){

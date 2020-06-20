@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.4.22";
+const GLZ_VERSION = "1.4.27";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -205,6 +205,7 @@ window.onload = function(){
     fadeRect.zIndex = fadingRect_z;        // cuanto mas alto mas delante se pintara..
     app.stage.addChild(fadeRect);
 
+    document.addEventListener('contextmenu', event => event.preventDefault());
 
 }
 //----------------------------------------------------------------------------------
@@ -516,7 +517,6 @@ class gameObject{
         this.father = _id_;
         this.visible = true;
         this.mask;                  // sprite para hacer el clipping..      esto es la mascara..
-        
         this.onScene = false;
         this.sceneId;
         this.screenx = this.x;
@@ -918,7 +918,7 @@ class gameObject{
         }
     }
     //-------------------------------------------------------
-    setType = function (type){
+    setType(type){
         this.type = type;
         if(this.body_created){
             this.body.label = type;
@@ -1466,11 +1466,15 @@ class text extends gameObject{
         }
     }
     frame(){
+        if(this.idText.texture.height===0){
+            return;
+        }
         this.idText.x = this.x;
         this.idText.y = this.y;
         this.idText.zIndex = this.z;
         this.idText.alpha = this.alpha;
         this.idText.text = this.text;
+        this.idText.visible = this.visible;
         if(this.style===undefined){
             this.idText.style.fill = this.color;
             switch(this.align){
@@ -1712,6 +1716,9 @@ class tbutton extends gameObject{
     }
     setEvent(eventName){
         this.eventName = eventName;
+    }
+    finalize(){
+        signal(this.idText, s_kill);
     }
 }
 //---------------------------------------------------------------------------------
@@ -2533,7 +2540,7 @@ class scene extends gameObject{
         super();
         this.st = 0;
         // CREAR SPRITE PARA LA ESCENA..
-        this.s = new PIXI.Sprite(img);
+        this.graph = this.s = new PIXI.Sprite(img);
         this.s.x = x;
         this.s.y = y;
         if(exists(_id_)){
@@ -2564,6 +2571,9 @@ class scene extends gameObject{
         // COLOCAR ESCENA EN POSICION INICIAL..
         this.x = this.s.x;
         this.y = this.s.y;
+        // GUARDAR ANCHO Y ALTO PARA this.setCameraLimits()..
+        this.w = w;
+        this.h = h;
         // POSICION DE LA CAMARA..
         this.CX = x + w/2;  // posicion incicial de la camara..
         this.CY = y + h/2;  // posicion inicial de la camara..
@@ -2613,7 +2623,7 @@ class scene extends gameObject{
                 }
                 this.s.x = this.x;
                 this.s.y = this.y;
-                drawGraphic(this.gcam, this.CX, this.CY, 0, 1 , 1, 1);
+                //drawGraphic(this.gcam, this.CX, this.CY, 0, 1 , 1, 1);
 
             break;
             case 10:
@@ -2643,7 +2653,7 @@ class scene extends gameObject{
     }
     setCamera(id){
         if(id.sprite===undefined){
-            console.log(    "%c WARNING: camera without graph.",
+            console.log(    "%c WARNING: camera needs .setGraph() in constructor().",
                             'color: #ff0000; background: #ffffff'
                         );
         }else{
@@ -2653,6 +2663,14 @@ class scene extends gameObject{
             id.sprite.mask = this.s.mask;
         }
         
+    }
+    setCameraLimits(x, y){
+        this.camaraLimiteHorizontal = x;
+        this.camaraLimiteVertical   = y;
+        this.CAM_LIMIT_LEFT  = this.x + this.camaraLimiteHorizontal;
+        this.CAM_LIMIT_RIGHT = this.x + this.w - this.camaraLimiteHorizontal;
+        this.CAM_LIMIT_UP    = this.y + this.camaraLimiteVertical;
+        this.CAM_LIMIT_DOWN  = this.y + this.h - this.camaraLimiteVertical;
     }
 }
 //---------------------------------------------------------------------------------
