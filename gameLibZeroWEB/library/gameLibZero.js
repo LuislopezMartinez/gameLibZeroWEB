@@ -29,7 +29,7 @@
  * 
  */
 
-const GLZ_VERSION = "1.4.27";
+const GLZ_VERSION = "1.4.31";
 const GLZ_TYPE = "GAME FRAMEWORK";
 
 const s_kill        = 77;
@@ -521,6 +521,8 @@ class gameObject{
         this.sceneId;
         this.screenx = this.x;
         this.screeny = this.y;
+        this.xmirror = false;
+        this.ymirror = false;
     }
     initialize(){
 
@@ -566,11 +568,15 @@ class gameObject{
             this.sprite.visible = this.visible;
 
             if(this.sizex===1 && this.sizey===1){
-                this.sprite.scale.x = this.size;
-                this.sprite.scale.y = this.size;
+                this.sprite.scale.x = this.xmirror ? -this.size : this.size;
+                this.sprite.scale.y = this.ymirror ? -this.size : this.size;
+                //this.sprite.scale.x = this.size;
+                //this.sprite.scale.y = this.size;
             }else{
-                this.sprite.scale.x = this.sizex;
-                this.sprite.scale.y = this.sizey;
+                this.sprite.scale.x = this.xmirror ? -this.sizex : this.sizex;
+                this.sprite.scale.y = this.ymirror ? -this.sizey : this.sizey;
+                //this.sprite.scale.x = this.sizex;
+                //this.sprite.scale.y = this.sizey;
             }
 
         }
@@ -1516,6 +1522,10 @@ class text extends gameObject{
             return undefined;
         }
     }
+    setSize(s){
+        this.textSize = size+'px';
+        this.idText.style.fontSize = this.textSize;
+    }
 }
 //----------------------------------------------------------------------------------
 // EXAMPLE TEXT STYLE..
@@ -1675,10 +1685,11 @@ class tbutton extends gameObject{
         this.g1;
         this.g2;
         this.idText;
+        this.textColor = 0xffffff;
     }
     initialize(){
-        this.idText = new text("Arial", this.textSize, this.text, CENTER, this.x, this.y, 0xffffff, 1);
-        
+        this.idText = new text("Arial", this.textSize, this.text, CENTER, this.x, this.y, this.textColor, 1);
+        signal(this.idText, s_protected);
     }
     frame(){
         switch(this.st){
@@ -1718,7 +1729,11 @@ class tbutton extends gameObject{
         this.eventName = eventName;
     }
     finalize(){
+        signal(this.idText, s_unprotected);
         signal(this.idText, s_kill);
+    }
+    setTextColor(col){
+        this.textColor = col;
     }
 }
 //---------------------------------------------------------------------------------
@@ -1733,6 +1748,7 @@ class inputBox extends gameObject{
         this.pwdMode = pwdMode;
         this.eventName = "";
         this.textSize = 14;
+        this.textSize = h;
         this.textColor = 0x777777;
         this.textColor1 = 0x777777;
         this.textColor2 = 0x000000;
@@ -1745,7 +1761,8 @@ class inputBox extends gameObject{
         this.onScreenKeyboard;
     }
     initialize(){
-        this.idText = new text("Arial", 22, this.parameter, RIGHT, this.x, this.y, this.textColor, 1);
+        this.idText = new text("Arial", this.textSize-4, this.parameter, RIGHT, this.x, this.y, this.textColor, 1);
+        signal(this.idText, s_protected);
         if(window.navigator.maxTouchPoints>1){
             this.mobilePlatform = true;
         }else{
@@ -1832,9 +1849,17 @@ class inputBox extends gameObject{
             break;
         }
     }
-
+    finalize(){
+        signal(this.idText, s_unprotected);
+        signal(this.idText, s_kill);
+    }
     setEvent(eventName){
         this.eventName = eventName;
+    }
+    setTextSize(s){
+        this.textSize = s;
+        //this.idText.setTextSize(this.textSize);
+        console.log(this.idText);
     }
 }
 //----------------------------------------------------------------------------------
